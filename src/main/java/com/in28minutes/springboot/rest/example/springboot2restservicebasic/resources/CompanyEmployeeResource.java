@@ -1,19 +1,23 @@
 package com.in28minutes.springboot.rest.example.springboot2restservicebasic.resources;
 
 import com.in28minutes.springboot.rest.example.springboot2restservicebasic.entities.CompanyEmployee;
-import com.in28minutes.springboot.rest.example.springboot2restservicebasic.exceptions.CompanyEmployeeNotFoundException;
+import com.in28minutes.springboot.rest.example.springboot2restservicebasic.exceptions.ResourceNotFoundException;
 import com.in28minutes.springboot.rest.example.springboot2restservicebasic.repositories.CompanyEmployeeRepository;
+
 import lombok.AllArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import java.net.URI;
-import java.util.Optional;
 
+/**
+ * CRUD REST-API для управления сущностью "Сотрудник фирмы" в базе данных.
+ */
+@RequestMapping("/company-employees")
 @RestController // Комбинация @Controller и @ResponseBody. Возвращаемые компоненты преобразуются в / из JSON / XML.
 @AllArgsConstructor
 public class CompanyEmployeeResource {
@@ -23,69 +27,120 @@ public class CompanyEmployeeResource {
 
     // CREATE --------------------------------------------------------
 
-    @PostMapping("/company-employees")
-    public ResponseEntity<Object> createCompanyEmployee(@RequestBody CompanyEmployee companyEmployee) {
-
+    /**
+     * Сохранение сущности предоставляемого сотрудника фирмы в БД
+     * @param companyEmployee - предоставленный объект сотрудника
+     * @return сохраненную сущность сотрудника фирмы
+     */
+    @PostMapping
+    public ResponseEntity<CompanyEmployee> createCompanyEmployee(
+            @RequestBody CompanyEmployee companyEmployee
+    ) {
         CompanyEmployee savedCompanyEmployee = companyEmployeeRepository.save(companyEmployee);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(savedCompanyEmployee.getId()).toUri();
-
-        return ResponseEntity.created(location).build();
+        return new ResponseEntity<>(
+                savedCompanyEmployee,
+                HttpStatus.CREATED
+        );
     }
 
 
     // READ ----------------------------------------------------------
 
-    @GetMapping("/company-employees")
-    public Page<CompanyEmployee> retrieveAllCompanyEmployeesPageByPage(
+    /**
+     * Предоставление списка из сущностей сотрудников фирмы постранично
+     * @param page - текущая страниа
+     * @param size - количество сущностей, которое следует отображать на странице
+     * @param direction - Для каждого столбца указывается порядок сортировки записей:
+     *                  "ASC" - сортировать записи по возрастанию (по умолчанию),
+     *                  "DESC" - по убыванию
+     * @param properties - свойства сущности, по которым осуществляется сортировка в указанном выше "direction"
+     * @return Объект страницы, содержащий отсортированный и ограниченный по количеству список сотрудников фирмы
+     */
+    @GetMapping
+    public ResponseEntity<Page<CompanyEmployee>> retrieveAllCompanyEmployeesPageByPage(
             @RequestParam int page,
             @RequestParam int size,
-            @RequestParam(required = false) Sort.Direction direction,
-            @RequestParam(required = false) String... properties
+            @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(required = false, defaultValue = "firstName") String... properties
     ) {
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, direction, properties);
 
-        if (direction != null && properties != null && properties.length > 0) {
-            pageable = PageRequest.of(page-1, size, direction, properties);
-        }
-
-        return companyEmployeeRepository.findAll(pageable);
+        return new ResponseEntity<>(
+                companyEmployeeRepository.findAll(pageable),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/company-employees/{id}")
-    public CompanyEmployee retrieveCompanyEmployee(@PathVariable long id) throws CompanyEmployeeNotFoundException {
-        Optional<CompanyEmployee> companyEmployee = companyEmployeeRepository.findById(id);
+    /**
+     * Извлечение сущности сотрудника фирмы по его идентификатору из БД
+     * @param id - идентификатор
+     * @return сущность сотрудника фирмы
+     * @throws ResourceNotFoundException - Не получилось найти сотрудника фирмы по указанному идентификатору
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<CompanyEmployee> retrieveCompanyEmployee(
+            @PathVariable(value = "id") long id
+    ) throws ResourceNotFoundException {
 
-        if (companyEmployee.isEmpty()) {
-            throw new CompanyEmployeeNotFoundException("id-" + id);
-        }
+        CompanyEmployee employee = companyEmployeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CompanyEmployee.class, id));
 
-        return companyEmployee.get();
+        return new ResponseEntity<>(
+                employee,
+                HttpStatus.OK
+        );
     }
 
 
     // UPDATE --------------------------------------------------------
 
-    @PutMapping("/company-employees/{id}")
-    public ResponseEntity<Object> updateCompanyEmployee(@RequestBody CompanyEmployee companyEmployee, @PathVariable long id) {
+    /**
+     * Обновление сущности сотрудника фирмы по его идентификатору
+     * @param id - идентификатор
+     * @param companyEmployee - обновленная версия сущности сотрудника фирмы
+     * @return обновленную версию сущности сотрудника фирмы
+     * @throws ResourceNotFoundException - Не получилось найти сотрудника фирмы по указанному идентификатору
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<CompanyEmployee> updateCompanyEmployee(
+            @PathVariable long id,
+            @RequestBody  CompanyEmployee companyEmployee
+    ) throws ResourceNotFoundException {
 
-        if (companyEmployeeRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!companyEmployeeRepository.existsById(id))
+            throw new ResourceNotFoundException(CompanyEmployee.class, id);
 
         companyEmployee.setId(id);
 
-        companyEmployeeRepository.save(companyEmployee);
-
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(
+                companyEmployeeRepository.save(companyEmployee),
+                HttpStatus.OK
+        );
     }
 
 
     // DELETE --------------------------------------------------------
 
-    @DeleteMapping("/company-employees/{id}")
-    public void deleteCompanyEmployee(@PathVariable long id) {
+    /**
+     * Удаление сущности сотрудника фирмы по его идентификатору
+     * @param id - идентификатор
+     * @return булевый идентификатор выполнения операции
+     * @throws ResourceNotFoundException - Не получилось найти сотрудника фирмы по указанному идентификатору
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteCompanyEmployee(
+            @PathVariable long id
+    ) throws ResourceNotFoundException {
+
+        if (!companyEmployeeRepository.existsById(id))
+            throw new ResourceNotFoundException(CompanyEmployee.class, id);
+
         companyEmployeeRepository.deleteById(id);
+
+        return new ResponseEntity<>(
+                true,
+                HttpStatus.OK
+        );
     }
 }

@@ -32,3 +32,7 @@ build/
 
 # h2 database files
 data/
+
+log4j/
+
+data.txt

@@ -1,19 +1,19 @@
 package com.in28minutes.springboot.rest.example.springboot2restservicebasic.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.util.Date;
+import java.time.LocalDate;
 
+/**
+ * Сущность "Сотрудник фирмы"
+ */
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter @Setter
+@Data
 public class CompanyEmployee {
 
     @Id             // Первичный ключ объекта
@@ -43,11 +43,11 @@ public class CompanyEmployee {
     /**
      * Дата принятия на работу
      */
-    private Date employmentDate;
+    private LocalDate employmentDate;
 
     /**
      * Дата увольнения
      */
-    private Date dismissalDate;
+    private LocalDate dismissalDate;
 
 }
