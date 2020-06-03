@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * CRUD REST-API для управления сущностью "Сотрудник фирмы" в базе данных.
  */
@@ -46,6 +48,18 @@ public class CompanyEmployeeResource {
 
 
     // READ ----------------------------------------------------------
+
+    /**
+     * Получить список всех сущностей сотрудников фирмы
+     * @return все сущности сотрудников фирмы из БД
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<CompanyEmployee>> retrieveAllCompanyEmployees() {
+        return new ResponseEntity<>(
+                companyEmployeeRepository.findAll(),
+                HttpStatus.OK
+        );
+    }
 
     /**
      * Предоставление списка из сущностей сотрудников фирмы постранично
