@@ -14,7 +14,7 @@ HELP.md
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+*idea/
 *.iws
 *.iml
 *.ipr
@@ -25,14 +25,13 @@ HELP.md
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
+*build/
 
 ### VS Code ###
 .vscode/
 
 # h2 database files
-data/
+*data/
 
-log4j/
-
-data.txt
+# log files
+*log4j/
