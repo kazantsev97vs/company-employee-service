@@ -3,7 +3,6 @@ package spring.cloud.netflix.eureka.employee.statistic.resources;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +16,11 @@ import spring.cloud.netflix.eureka.employee.statistic.services.StatisticService;
 import java.util.List;
 
 /**
- *
+ * REST-API для получения статистики над сотрудниками фирмы сервиса "employee-service".
  */
 @RequestMapping("/company-employees-statistic")
 @RestController // Комбинация @Controller и @ResponseBody. Возвращаемые компоненты преобразуются в / из JSON / XML.
 public class CompanyEmployeeStatisticResource {
-
-    private EurekaClient eurekaClient;
 
     private final StatisticService statisticService;
 
@@ -31,28 +28,29 @@ public class CompanyEmployeeStatisticResource {
 
     private final RestTemplate restTemplate;
 
-    private final String COMPANY_EMPLOYEES_URL_PATTERN = "http://%s:%d/company-employees/";
-
     public CompanyEmployeeStatisticResource(
             @Autowired EurekaClient eurekaClient,
             @Autowired StatisticService statisticService
     ) {
-        this.eurekaClient = eurekaClient;
         this.statisticService = statisticService;
         this.restTemplate = new RestTemplate();
 
         Application application = eurekaClient.getApplication("employee-service");
         InstanceInfo instanceInfo = application.getInstances().get(0);
 
-        this.companyEmployeesUrl = String.format(COMPANY_EMPLOYEES_URL_PATTERN, instanceInfo.getHostName(), instanceInfo.getPort());
+        this.companyEmployeesUrl = String.format(
+                "http://%s:%d/company-employees/",
+                instanceInfo.getHostName(),
+                instanceInfo.getPort()
+        );
     }
 
     // STATISTICS ----------------------------------------------------
 
     /**
-     * Вычислить средний период работы в компании
+     * Вычислить средний период работы в компании сотрудников
      * сумма количеств дней работы каждого поделить на число сотрудников
-     * @return период
+     * @return средний период работы в компании
      */
     @GetMapping("/average-work-period")
     public ResponseEntity<Double> calculateAverageWorkPeriodInCompany() {
@@ -65,8 +63,8 @@ public class CompanyEmployeeStatisticResource {
     }
 
     /**
-     *
-     * @return
+     * Получить список отделов с наибольшим числом сотрудников
+     * @return список названий отделов
      */
     @GetMapping("/largest-employee-number-department")
     public ResponseEntity<List<String>> getDepartmentWithLargestEmployeeNumber() {

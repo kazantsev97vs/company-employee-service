@@ -23,8 +23,8 @@ class StatisticServiceImpl implements StatisticService {
         return Arrays.stream(companyEmployees)
                 // выбираем только теъ сотрудников, у которых установлена дата устройства на работу
                 .filter(employee -> employee.getEmploymentDate() != null)
-                // а для тех сотрудников, у которых отсутствует дата увольнения (они до сих пор работают), устанавливаем ей текущую дату
                 // создаем поток, состоящий из количеств дней между устройством на работу и увольнением с неё
+                // а для тех сотрудников, у которых отсутствует дата увольнения (они до сих пор работают), устанавливаем ей текущую дату
                 .map(employee -> DAYS.between(employee.getEmploymentDate(), employee.getDismissalDate() == null ? LocalDate.now() : employee.getDismissalDate()))
                 // возвращаем среднее
                 .collect(Collectors.averagingLong(Long::longValue));
