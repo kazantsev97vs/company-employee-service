@@ -17,10 +17,10 @@ import static java.time.temporal.ChronoUnit.DAYS;
 class StatisticServiceImpl implements StatisticService {
 
     @Override
-    public Double calculateAverageWorkPeriodInCompany(CompanyEmployee[] companyEmployees) {
+    public Double calculateAverageWorkPeriodInCompany(List<CompanyEmployee> companyEmployees) {
 
         // массив -> преобразуем его в новый поток ->
-        return Arrays.stream(companyEmployees)
+        return companyEmployees.stream()
                 // выбираем только теъ сотрудников, у которых установлена дата устройства на работу
                 .filter(employee -> employee.getEmploymentDate() != null)
                 // создаем поток, состоящий из количеств дней между устройством на работу и увольнением с неё
@@ -31,10 +31,10 @@ class StatisticServiceImpl implements StatisticService {
     }
 
     @Override
-    public Map<String, Long> getDepartmentCounters(CompanyEmployee[] companyEmployees) {
+    public Map<String, Long> getDepartmentCounters(List<CompanyEmployee> companyEmployees) {
 
         // массив -> преобразуем его в поток ->
-        return Arrays.stream(companyEmployees)
+        return companyEmployees.stream()
                 // у сотрудников у которых не указан отдел, указываем, что они не принадлежат к какому-либо отделу
                 .peek(employee -> employee.setDepartment(employee.getDepartment() == null ? "NOT BE IN ANY DEPARTMENT" : employee.getDepartment()))
                 // преобразуем поток в HashMap {key = department, value = List<CompanyEmployee>}
@@ -44,7 +44,7 @@ class StatisticServiceImpl implements StatisticService {
     }
 
     @Override
-    public List<String> getDepartmentWithLargestEmployeeNumber(CompanyEmployee[] companyEmployees) {
+    public List<String> getDepartmentWithLargestEmployeeNumber(List<CompanyEmployee> companyEmployees) {
 
         Map<String, Long> departmentCountersMap = getDepartmentCounters (companyEmployees);
         Long maxCount = departmentCountersMap.values().stream().max(Long::compareTo).orElse(0L);

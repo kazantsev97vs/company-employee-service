@@ -7,9 +7,9 @@ import java.util.Map;
 
 public interface StatisticService {
 
-    Double calculateAverageWorkPeriodInCompany(CompanyEmployee[] companyEmployees);
+    Double calculateAverageWorkPeriodInCompany(List<CompanyEmployee> companyEmployees);
 
-    Map<String, Long> getDepartmentCounters(CompanyEmployee[] companyEmployees);
+    Map<String, Long> getDepartmentCounters(List<CompanyEmployee> companyEmployees);
 
-    List<String> getDepartmentWithLargestEmployeeNumber(CompanyEmployee[] companyEmployees);
+    List<String> getDepartmentWithLargestEmployeeNumber(List<CompanyEmployee> companyEmployees);
 }
